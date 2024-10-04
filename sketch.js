@@ -2,76 +2,58 @@ let speechRec;
 let phrases = [];
 const recognitionDuration = 7000;
 const fadeDuration = 50000;
-const maxPhrases = 20;
+const maxPhrases = 20;  // Максимальное количество фраз на экране
 let isRecognizing = false;
 const frameSize = 100;
 const occupiedAreas = [];
-const baseFontSize = 18; // Базовый размер шрифта для разрешения 1280x720
-const baseLineSpacing = 20; // Базовое расстояние между строками
-const baseWidth = 1280;
-const baseHeight = 720;
-let lineSpacing; // Текущее расстояние между строками
+const baseWidth = 1280;  // Базовая ширина
+const baseHeight = 720;  // Базовая высота
+const baseFontSize = 18;  // Базовый размер шрифта при 1280x720
+const baseLineHeight = 20;  // Базовое расстояние между строками (межстрочный интервал)
+let lineHeight;  // Переменная для хранения текущего расстояния между строками
 
 function setup() {
-  createCanvas(windowWidth, windowHeight);  // Динамическое разрешение
+  createCanvas(windowWidth, windowHeight);  // Устанавливаем холст на весь экран
+  noStroke();
   background(0);
-  
+
   speechRec = new p5.SpeechRec('ru-RU', gotSpeech);
   speechRec.interimResults = false;
   speechRec.onEnd = restartRecognition;
 
   startRecognition();
 
-  adjustTextSize(); // Масштабируем текст и расстояние между строками
+  adjustTextSize();  // Масштабируем текст
   fill(255);
 }
 
-function draw() {
-  background(0);
-  
-  for (let i = phrases.length - 1; i >= 0; i--) {
-    let phrase = phrases[i];
-
-    fill(255, 255, 255, phrase.alpha);
-    if (phrase.type === 'speech') {
-      textAlign(LEFT, CENTER);
-    } else if (phrase.type === 'generated') {
-      textAlign(RIGHT, CENTER);
-    }
-    
-    for (let j = 0; j < phrase.lines.length; j++) {
-      text(phrase.lines[j].toLowerCase(), phrase.x, phrase.y + j * lineSpacing);  // Пропорциональное расстояние между строками
-    }
-    
-    phrase.alpha -= 178 / (fadeDuration / 1000 * frameRate());
-    
-    if (phrase.alpha <= 25) {
-      phrase.alpha = 25; 
-    }
-  }
-  
-  if (phrases.length > maxPhrases) {
-    phrases.shift();
+// Включаем или отключаем полноэкранный режим по нажатию клавиши "F"
+function keyPressed() {
+  if (key === 'f' || key === 'F') {
+    let fs = fullscreen();
+    fullscreen(!fs);  // Переключаем полноэкранный режим
   }
 }
 
 function windowResized() {
-  resizeCanvas(windowWidth, windowHeight);  // Подгонка холста под новые размеры окна
-  adjustTextSize();  // Подгонка текста и расстояния между строками
+  resizeCanvas(windowWidth, windowHeight);  // Подгоняем холст под новый размер окна
+  adjustTextSize();  // Масштабируем текст при изменении размеров окна
 }
 
 function adjustTextSize() {
-  const scaleFactor = min(windowWidth / baseWidth, windowHeight / baseHeight);  // Масштабирование на основе минимального измерения
-  textSize(baseFontSize * scaleFactor);  // Увеличиваем размер шрифта пропорционально масштабу
-  lineSpacing = baseLineSpacing * scaleFactor;  // Увеличиваем расстояние между строками пропорционально масштабу
+  // Рассчитываем масштабирование относительно базового разрешения
+  let scaleFactorWidth = width / baseWidth;  // Используем ширину для масштабирования
+  let scaleFactorHeight = height / baseHeight;  // Используем высоту для масштабирования
+
+  let scaleFactor = Math.min(scaleFactorWidth, scaleFactorHeight);  // Выбираем минимальный масштаб
+
+  textSize(baseFontSize * scaleFactor);  // Масштабируем размер шрифта
+  lineHeight = baseLineHeight * scaleFactor;  // Масштабируем расстояние между строками
 }
-
-// Остальной код остается без изменений
-
 
 function draw() {
   background(0);
-  
+
   for (let i = phrases.length - 1; i >= 0; i--) {
     let phrase = phrases[i];
 
@@ -81,19 +63,19 @@ function draw() {
     } else if (phrase.type === 'generated') {
       textAlign(RIGHT, CENTER);
     }
-    
+
     for (let j = 0; j < phrase.lines.length; j++) {
-      text(phrase.lines[j].toLowerCase(), phrase.x, phrase.y + j * 30);
+      text(phrase.lines[j].toLowerCase(), phrase.x, phrase.y + j * lineHeight);  // Используем lineHeight для расстояния между строками
     }
-    
+
     // Уменьшение альфа-канала
     phrase.alpha -= 178 / (fadeDuration / 1000 * frameRate());
-    
+
     if (phrase.alpha <= 25) {
-      phrase.alpha = 25; 
+      phrase.alpha = 25;
     }
   }
-  
+
   // Если фраз больше 20, удаляем первую
   if (phrases.length > maxPhrases) {
     phrases.shift();  // Удаляем самую старую фразу
