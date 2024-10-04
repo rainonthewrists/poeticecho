@@ -40,6 +40,49 @@ function draw() {
     }
     
     for (let j = 0; j < phrase.lines.length; j++) {
+      text(phrase.lines[j].toLowerCase(), phrase.x, phrase.y + j * lineSpacing);  // Пропорциональное расстояние между строками
+    }
+    
+    phrase.alpha -= 178 / (fadeDuration / 1000 * frameRate());
+    
+    if (phrase.alpha <= 25) {
+      phrase.alpha = 25; 
+    }
+  }
+  
+  if (phrases.length > maxPhrases) {
+    phrases.shift();
+  }
+}
+
+function windowResized() {
+  resizeCanvas(windowWidth, windowHeight);  // Подгонка холста под новые размеры окна
+  adjustTextSize();  // Подгонка текста и расстояния между строками
+}
+
+function adjustTextSize() {
+  const scaleFactor = min(windowWidth / baseWidth, windowHeight / baseHeight);  // Масштабирование на основе минимального измерения
+  textSize(baseFontSize * scaleFactor);  // Увеличиваем размер шрифта пропорционально масштабу
+  lineSpacing = baseLineSpacing * scaleFactor;  // Увеличиваем расстояние между строками пропорционально масштабу
+}
+
+// Остальной код остается без изменений
+
+
+function draw() {
+  background(0);
+  
+  for (let i = phrases.length - 1; i >= 0; i--) {
+    let phrase = phrases[i];
+
+    fill(255, 255, 255, phrase.alpha);
+    if (phrase.type === 'speech') {
+      textAlign(LEFT, CENTER);
+    } else if (phrase.type === 'generated') {
+      textAlign(RIGHT, CENTER);
+    }
+    
+    for (let j = 0; j < phrase.lines.length; j++) {
       text(phrase.lines[j].toLowerCase(), phrase.x, phrase.y + j * 30);
     }
     
