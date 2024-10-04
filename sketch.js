@@ -2,13 +2,18 @@ let speechRec;
 let phrases = [];
 const recognitionDuration = 7000;
 const fadeDuration = 50000;
-const maxPhrases = 20;  // Максимальное количество фраз на экране
+const maxPhrases = 20;
 let isRecognizing = false;
 const frameSize = 100;
 const occupiedAreas = [];
+const baseFontSize = 18; // Базовый размер шрифта для разрешения 1280x720
+const baseLineSpacing = 20; // Базовое расстояние между строками
+const baseWidth = 1280;
+const baseHeight = 720;
+let lineSpacing; // Текущее расстояние между строками
 
 function setup() {
-  createCanvas(1920, 1080);  // Изменено разрешение на 1920x1080
+  createCanvas(windowWidth, windowHeight);  // Динамическое разрешение
   background(0);
   
   speechRec = new p5.SpeechRec('ru-RU', gotSpeech);
@@ -17,7 +22,7 @@ function setup() {
 
   startRecognition();
 
-  textSize(24);
+  adjustTextSize(); // Масштабируем текст и расстояние между строками
   fill(255);
 }
 
